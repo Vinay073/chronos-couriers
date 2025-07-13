@@ -111,4 +111,27 @@ public class DispatchCenter {
                 .filter(pkg -> pkg.getDeliveryTime() != null && pkg.getDeliveryTime() > pkg.getDeadline())
                 .toList();
     }
+
+    public void markPackageAsFailed(String packageId) {
+        Package pkg = packageMap.get(packageId);
+        if (pkg == null) throw new IllegalArgumentException("Package not found");
+
+        if (pkg.getStatus() == PackageStatus.DELIVERED) {
+            throw new IllegalStateException("Cannot mark delivered package as failed");
+        }
+
+        pkg.setStatus(PackageStatus.FAILED);
+
+        auditTrail.stream()
+                .filter(a -> a.getPackageId().equals(packageId))
+                .findFirst()
+                .ifPresent(assignment -> {
+                    Rider rider = riderMap.get(assignment.getRiderId());
+                    if (rider != null && rider.getStatus() == RiderStatus.BUSY) {
+                        rider.decrementLoad();
+                        rider.setStatus(RiderStatus.AVAILABLE);
+                    }
+                });
+    }
+
 }
