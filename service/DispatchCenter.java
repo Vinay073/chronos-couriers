@@ -10,6 +10,10 @@ public class DispatchCenter {
     private final Map<String, Rider> riderMap = new HashMap<>();
     private final List<Assignment> auditTrail = new ArrayList<>();
 
+    public List<Assignment> getAuditTrail() {
+        return auditTrail;
+    }
+
     private final PriorityQueue<Package> packageQueue = new PriorityQueue<>(
             (a, b) -> {
                 if (a.getPriority() != b.getPriority()) {
@@ -38,7 +42,7 @@ public class DispatchCenter {
         }
         packageMap.put(newPackage.getId(), newPackage);
         packageQueue.offer(newPackage);
-        assignPackages(); // Try immediate dispatch
+        assignPackages();
     }
 
     public void assignPackages() {
